@@ -1,0 +1,22 @@
+CREATE PROCEDURE SET_UNORDER_TIME (
+    COMP_ID INTEGER,
+    LAST_CHECK_TIME TIMESTAMP)
+AS
+begin
+  if (exists(select REC_ID from UNORDER_TIME
+             where (COMP_ID=:COMP_ID)
+                and(TIME_STOP>:LAST_CHECK_TIME)
+            )
+     )
+  then
+   update UNORDER_TIME set TIME_STOP='now' where REC_ID=(select REC_ID  from UNORDER_TIME
+                                                         where (COMP_ID=:COMP_ID)
+                                                            and(TIME_STOP>:LAST_CHECK_TIME)
+                                                        );
+  else
+   Begin
+    insert into UNORDER_TIME (REC_ID, COMP_ID, TIME_START, TIME_STOP)
+    values(gen_id(GEN_UNORDER_ID,1), :COMP_ID, 'now', 'now');
+   End
+
+end
